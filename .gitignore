@@ -1,0 +1,8 @@
+#Ignore Visual Studio Files
+
+.vs
+x64
+*.vcxproj.user
+Debug
+
+*.log

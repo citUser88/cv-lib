@@ -1,0 +1,1831 @@
+﻿typedef struct VkPhysicalDeviceProperties {
+ uint32_t apiVersion;
+ uint32_t driverVersion;
+ uint32_t vendorID;
+ uint32_t deviceID;
+ VkPhysicalDeviceType deviceType;
+ char deviceName[VK_MAX_PHYSICAL_DEVICE_NAME_SIZE];
+ uint8_t pipelineCacheUUID[VK_UUID_SIZE];	 //pipelineCacheUUID is an array of size VK_UUID_SIZE, containing 8-bit values that represent a
+											 //universally unique identifier for the device
+
+ VkPhysicalDeviceLimits limits;
+ VkPhysicalDeviceSparseProperties sparseProperties;
+} VkPhysicalDeviceProperties;
+
+typedef struct VkPhysicalDeviceProperties2 {
+ VkStructureType sType;
+ void* pNext;
+ VkPhysicalDeviceProperties properties;
+} VkPhysicalDeviceProperties2;
+
+typedef enum VkPhysicalDeviceType {	 ^- used in VkPDP.deviceType,
+ VK_PHYSICAL_DEVICE_TYPE_OTHER = 0,
+ VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU = 1,
+ VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU = 2,
+ VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU = 3,
+ VK_PHYSICAL_DEVICE_TYPE_CPU = 4,
+} VkPhysicalDeviceType;
+
+//   • VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU - the device is typically one embedded in or tightly coupled with the host.
+//   • VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU - the device is typically a separate processor connected to the host via an interlink.
+//   • VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU - the device is typically a virtual node in a virtualization environment.
+//   • VK_PHYSICAL_DEVICE_TYPE_CPU - the device is typically running on the same processors as the host
+
+typedef enum VkVendorId {			^- used in VkPDP.vendorID;
+ VK_VENDOR_ID_VIV = 0x10001,
+ VK_VENDOR_ID_VSI = 0x10002,
+ VK_VENDOR_ID_KAZAN = 0x10003,
+} VkVendorId;
+
+typedef struct VkPhysicalDevicePCIBusInfoPropertiesEXT {
+ VkStructureType sType;
+ void* pNext;
+ uint32_t pciDomain;
+ uint32_t pciBus;
+ uint32_t pciDevice;
+ uint32_t pciFunction;
+} VkPhysicalDevicePCIBusInfoPropertiesEXT;
+
+typedef struct VkPhysicalDeviceIDProperties {
+ VkStructureType sType;
+ void* pNext;
+ uint8_t deviceUUID[VK_UUID_SIZE];
+ uint8_t driverUUID[VK_UUID_SIZE];
+ uint8_t deviceLUID[VK_LUID_SIZE];
+ uint32_t deviceNodeMask;
+ VkBool32 deviceLUIDValid;
+} VkPhysicalDeviceIDProperties;
+typedef VkPhysicalDeviceIDProperties VkPhysicalDeviceIDPropertiesKHR;
+
+/*To query properties of queues available on a physical device, call:*/
+void vkGetPhysicalDeviceQueueFamilyProperties(
+ VkPhysicalDevice physicalDevice,	   // must be a valid VkPhysicalDevice handle
+ uint32_t* pQueueFamilyPropertyCount,  // <->\\ pointer to an integer related to the number of queue families, available or queried, as described below.
+									   // implicit if value referenced by pQFPC != 0 and pQFPs != NULL then pQFPs MUST be a VALID pointer to an array of
+									   // pQFPC # of VkQueueFamilyProperties structures
+ VkQueueFamilyProperties* pQueueFamilyProperties);
+
+typedef struct VkQueueFamilyProperties {
+ VkQueueFlags queueFlags;				  //see VkQueueFlagBits
+ uint32_t queueCount;					  // each QF must support at least one queue
+ uint32_t timestampValidBits;			  // ui32 of relevant bits in the timestamps written via vkCmdWriteTimeStamp
+										  // valid range 36..64 bits, or a avlue of 0, indicating no support for timestamps
+										  // any bits outside valid range will be 0
+ VkExtent3D minImageTransferGranularity;  // minimum granularity supported for image transfer operations on the queues in the queue family
+} VkQueueFamilyProperties;
+
+typedef enum VkQueueFlagBits {
+ VK_QUEUE_GRAPHICS_BIT = 0x00000001,
+ VK_QUEUE_COMPUTE_BIT = 0x00000002,
+ VK_QUEUE_TRANSFER_BIT = 0x00000004,
+ VK_QUEUE_SPARSE_BINDING_BIT = 0x00000008,
+} VkQueueFlagBits
+
+• VK_QUEUE_GRAPHICS_BIT specifies that queues in this queue family support graphics operations.
+• VK_QUEUE_COMPUTE_BIT specifies that queues in this queue family support compute operations.
+• VK_QUEUE_TRANSFER_BIT specifies that queues in this queue family support transfer operations.
+• VK_QUEUE_SPARSE_BINDING_BIT specifies that queues in this queue family support sparse memory
+	  management operations (see Sparse Resources). If any of the sparse resource features are
+	  enabled, then at least one queue family must support this bit.
+
+typedef struct VkQueueFamilyProperties2 {
+ VkStructureType sType;
+ void* pNext;
+ VkQueueFamilyProperties queueFamilyProperties;
+} VkQueueFamilyProperties2;
+
+typedef struct VkDeviceQueueCreateInfo {
+ VkStructureType sType;			// 
+ const void* pNext;				// NULL or pointer to extension-specific structure
+ VkDeviceQueueCreateFlags flags;// reserved! for future crew
+ uint32_t queueFamilyIndex;		// uint32 index of queue family to create this device
+								// corresponds to the index of an element of pQueueFamilyProperties,
+								//										     pQFPs was returned by vkGetPhysicalDeviceQueueFamilyProperties
+ uint32_t queueCount;			// specifies # of Qs to create in the QF indicated by qFI
+ const float* pQueuePriorities; // array of queueCount (normalized floating point values)
+								// specify priorties of work that will be submitted to each created queue SEE QUEUE PRIORITY for more about this
+} VkDeviceQueueCreateInfo;
+
+typedef VkFlags VkDeviceQueueCreateFlags;
+
+void vkGetDeviceQueue(
+ VkDevice device,			  // logical devices that OWNS the Queue
+ uint32_t queueFamilyIndex,	  // index this queue family belongs to
+ uint32_t queueIndex,		  // index into the queue family of the queue to retrieve
+ VkQueue* pQueue);		      // stores the handle which is retrieved
+
+void vkGetPhysicalDeviceFeatures(
+ VkPhysicalDevice physicalDevice,
+ VkPhysicalDeviceFeatures* pFeatures); // \/-pointer to memory storing big structure just past this line....
+
+typedef struct VkPhysicalDeviceFeatures {
+ VkBool32 robustBufferAccess;
+ VkBool32 fullDrawIndexUint32;
+ VkBool32 imageCubeArray;
+ VkBool32 independentBlend;
+ VkBool32 geometryShader;
+ VkBool32 tessellationShader;
+ VkBool32 sampleRateShading;
+ VkBool32 dualSrcBlend;
+ VkBool32 logicOp;
+ VkBool32 multiDrawIndirect;
+ VkBool32 drawIndirectFirstInstance;
+ VkBool32 depthClamp;
+ VkBool32 depthBiasClamp;
+ VkBool32 fillModeNonSolid;
+ VkBool32 depthBounds;
+ VkBool32 wideLines;
+ VkBool32 largePoints;
+ VkBool32 alphaToOne;
+ VkBool32 multiViewport;
+ VkBool32 samplerAnisotropy;
+ VkBool32 textureCompressionETC2;
+ VkBool32 textureCompressionASTC_LDR;
+ VkBool32 textureCompressionBC;
+ VkBool32 occlusionQueryPrecise;
+ VkBool32 pipelineStatisticsQuery;
+ VkBool32 vertexPipelineStoresAndAtomics;
+ VkBool32 fragmentStoresAndAtomics;
+ VkBool32 shaderTessellationAndGeometryPointSize;
+ VkBool32 shaderImageGatherExtended;
+ VkBool32 shaderStorageImageExtendedFormats;
+ VkBool32 shaderStorageImageMultisample;
+ VkBool32 shaderStorageImageReadWithoutFormat;
+ VkBool32 shaderStorageImageWriteWithoutFormat;
+ VkBool32 shaderUniformBufferArrayDynamicIndexing;
+Chapter 35. Features | 1217
+ VkBool32 shaderSampledImageArrayDynamicIndexing;
+ VkBool32 shaderStorageBufferArrayDynamicIndexing;
+ VkBool32 shaderStorageImageArrayDynamicIndexing;
+ VkBool32 shaderClipDistance;
+ VkBool32 shaderCullDistance;
+ VkBool32 shaderFloat64;
+ VkBool32 shaderInt64;
+ VkBool32 shaderInt16;
+ VkBool32 shaderResourceResidency;
+ VkBool32 shaderResourceMinLod;
+ VkBool32 sparseBinding;
+ VkBool32 sparseResidencyBuffer;
+ VkBool32 sparseResidencyImage2D;
+ VkBool32 sparseResidencyImage3D;
+ VkBool32 sparseResidency2Samples;
+ VkBool32 sparseResidency4Samples;
+ VkBool32 sparseResidency8Samples;
+ VkBool32 sparseResidency16Samples;
+ VkBool32 sparseResidencyAliased;
+ VkBool32 variableMultisampleRate;
+ VkBool32 inheritedQueries;
+} VkPhysicalDeviceFeatures;
+
+VkResult vkCreateWin32SurfaceKHR(
+ VkInstance instance,							   // instance to associate surface with, MUST be valid
+ const VkWin32SurfaceCreateInfoKHR* pCreateInfo	   // ptr to insance of VkWin32SurfaceCreateInfoKHR struc
+												   // containing parameters affecting the creation of the surface object, MUST be valid as specified
+ const VkAllocationCallbacks* pAllocator,		   // allocator used for host memory allocated for the surface object when there is
+												   // no more specific allocator available (SEE MEMORY ALLOCATION), can be NULL
+ VkSurfaceKHR* pSurface);						   // points to a VkSurfaceKHR HANDLE in which the created surface object is returned
+
+typedef struct VkWin32SurfaceCreateInfoKHR {
+ VkStructureType sType;	//VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR
+ const void* pNext; // MUST be NULL
+ VkWin32SurfaceCreateFlagsKHR flags;//reserved for future crew
+ HINSTANCE hinstance;
+ HWND hwnd;
+} VkWin32SurfaceCreateInfoKHR;
+
+With Win32, minImageExtent, maxImageExtent, and currentExtent must always equal the window size.
+The currentExtent of a Win32 surface must have both width and height greater than 0, or both of
+ them 0.
+Note
+ Due to above restrictions, it is only possible to create a new swapchain on this
+ platform with imageExtent being equal to the current size of the window.
+ The window size may become (0, 0) on this platform (e.g. when the window is
+ minimized), and so a swapchain cannot be created until the size changes.
+
+
+ typedef struct VkAttachmentDescription {
+ 	VkAttachmentDescriptionFlags flags;
+ 	VkFormat format;
+ 	VkSampleCountFlagBits samples;
+ 	VkAttachmentLoadOp loadOp;
+ 	VkAttachmentStoreOp storeOp;
+ 	VkAttachmentLoadOp stencilLoadOp;
+ 	VkAttachmentStoreOp stencilStoreOp;
+ 	VkImageLayout initialLayout;
+ 	VkImageLayout finalLayout;
+} VkAttachmentDescription;
+
+• flags		is a bitmask of VkAttachmentDescriptionFlagBits specifying additional properties of the attachment.
+• format	is a VkFormat value specifying the format of the image view that will be used for the attachment.
+• samples	is the number of samples of the image as defined in VkSampleCountFlagBits.
+• loadOp	is a VkAttachmentLoadOp value specifying how the contents of color and depth
+			components of the attachment are treated at the beginning of the subpass where it is first used.
+• storeOp is a VkAttachmentStoreOp value specifying how the contents of color and depth
+			components of the attachment are treated at the end of the subpass where it is last used.
+• stencilLoadOp is a VkAttachmentLoadOp value specifying how the contents of stencil
+			components of the attachment are treated at the beginning of the subpass where it is first used.
+• stencilStoreOp is a VkAttachmentStoreOp value specifying how the contents of stencil
+			components of the attachment are treated at the end of the last subpass where it is used.
+• initialLayout is the layout the attachment image subresource will be in when a render pass
+			instance begins.
+• finalLayout is the layout the attachment image subresource will be transitioned to when a
+			render pass instance ends.
+
+typedef struct VkRenderPassInputAttachmentAspectCreateInfo {
+ 	VkStructureType sType;
+ 	const void* pNext;
+ 	uint32_t aspectReferenceCount;
+ 	const VkInputAttachmentAspectReference* pAspectReferences;
+} VkRenderPassInputAttachmentAspectCreateInfo;
+typedef VkRenderPassInputAttachmentAspectCreateInfo VkRenderPassInputAttachmentAspectCreateInfoKHR
+
+1152 | Chapter 32. Window System Integration (WSI)
+
+typedef struct VkSwapchainCreateInfoKHR {
+ 	VkStructureType sType;
+ 	const void* pNext;
+ 	VkSwapchainCreateFlagsKHR flags;
+ 	VkSurfaceKHR surface;
+ 	uint32_t minImageCount;
+ 	VkFormat imageFormat;
+ 	VkColorSpaceKHR imageColorSpace;
+ 	VkExtent2D imageExtent;
+ 	uint32_t imageArrayLayers;
+ 	VkImageUsageFlags imageUsage;
+ 	VkSharingMode imageSharingMode;
+ 	uint32_t queueFamilyIndexCount;
+ 	const uint32_t* pQueueFamilyIndices;
+ 	VkSurfaceTransformFlagBitsKHR preTransform;
+ 	VkCompositeAlphaFlagBitsKHR compositeAlpha;
+ 	VkPresentModeKHR presentMode;
+ 	VkBool32 clipped;
+ 	VkSwapchainKHR oldSwapchain;
+} VkSwapchainCreateInfoKHR;
+
+• sType is the type of this structure.
+• pNext is NULL or a pointer to an extension-specific structure.
+• flags is a bitmask of VkSwapchainCreateFlagBitsKHR indicating parameters of the swapchain creation.
+• surface is the surface onto which the swapchain will present images. If the creation succeeds, the swapchain becomes associated with surface.
+• minImageCount is the minimum number of presentable images that the application needs. The implementation will 
+   either create the swapchain with at least that many images, or it will fail to
+create the swapchain.
+• imageFormat is a VkFormat value specifying the format the swapchain image(s) will be created with.
+• imageColorSpace is a VkColorSpaceKHR value specifying the way the swapchain interprets image data.
+• imageExtent is the size (in pixels) of the swapchain image(s). The behavior is platform-dependent if the 
+   image extent does not match the surface’s currentExtent as returned by vkGetPhysicalDeviceSurfaceCapabilitiesKHR.
+
+Note
+   On some platforms, it is normal that maxImageExtent may become (0, 0), for
+   example when the window is minimized. In such a case, it is not possible to create
+   a swapchain due to the Valid Usage requirements.
+  • imageArrayLayers is the number of views in a multiview/stereo surface. For non-stereoscopic-3D
+   applications, this value is 1. 
+ • imageUsage is a bitmask of VkImageUsageFlagBits describing the intended usage of the
+   (acquired) swapchain images.
+ • imageSharingMode is the sharing mode used for the image(s) of the swapchain.
+ • queueFamilyIndexCount is the number of queue families having access to the image(s) of the
+   swapchain when imageSharingMode is VK_SHARING_MODE_CONCURRENT.
+ • pQueueFamilyIndices is an array of queue family indices having access to the images(s) of the
+   swapchain when imageSharingMode is VK_SHARING_MODE_CONCURRENT.
+ • preTransform is a VkSurfaceTransformFlagBitsKHR value describing the transform, relative to
+   the presentation engine’s natural orientation, applied to the image content prior to
+   presentation. If it does not match the currentTransform value returned by
+   vkGetPhysicalDeviceSurfaceCapabilitiesKHR, the presentation engine will transform the image
+   content as part of the presentation operation.
+ • compositeAlpha is a VkCompositeAlphaFlagBitsKHR value indicating the alpha compositing mode
+   to use when this surface is composited together with other surfaces on certain window systems.
+ • presentMode is the presentation mode the swapchain will use. A swapchain’s present mode
+   determines how incoming present requests will be processed and queued internally.
+ • clipped specifies whether the Vulkan implementation is allowed to discard rendering
+   operations that affect regions of the surface that are not visible.
+ ◦ If set to VK_TRUE, the presentable images associated with the swapchain may not own all of
+   their pixels. Pixels in the presentable images that correspond to regions of the target surface
+   obscured by another window on the desktop, or subject to some other clipping mechanism
+   will have undefined content when read back. Pixel shaders may not execute for these pixels,
+   and thus any side effects they would have had will not occur. VK_TRUE value does not
+   guarantee any clipping will occur, but allows more optimal presentation methods to be used
+   on some platforms.
+ ◦ If set to VK_FALSE, presentable images associated with the swapchain will own all of the
+   pixels they contain.
+
+Note
+   Applications should set this value to VK_TRUE if they do not expect to read back the
+   content of presentable images before presenting them or after reacquiring them,
+   and if their pixel shaders do not have any side effects that require them to run for
+   all pixels in the presentable image.
+
+ • oldSwapchain is VK_NULL_HANDLE, or the existing non-retired swapchain currently associated
+   with surface. Providing a valid oldSwapchain may aid in the resource reuse, and also allows the
+   application to still present any images that are already acquired from it.
+   Upon calling vkCreateSwapchainKHR with an oldSwapchain that is not VK_NULL_HANDLE, oldSwapchain
+   is retired — even if creation of the new swapchain fails. The new swapchain is created in the non-
+   retired state whether or not oldSwapchain is VK_NULL_HANDLE.
+   Upon calling vkCreateSwapchainKHR with an oldSwapchain that is not VK_NULL_HANDLE, any images
+   from oldSwapchain that are not acquired by the application may be freed by the implementation,
+   Chapter 32. Window System Integration (WSI) | 1153
+   which may occur even if creation of the new swapchain fails. The application can destroy
+   oldSwapchain to free all memory associated with oldSwapchain.
+
+Note
+   Multiple retired swapchains can be associated with the same VkSurfaceKHR through
+   multiple uses of oldSwapchain that outnumber calls to vkDestroySwapchainKHR.
+   After oldSwapchain is retired, the application can pass to vkQueuePresentKHR any
+   images it had already acquired from oldSwapchain. E.g., an application may present
+   an image from the old swapchain before an image from the new swapchain is
+   ready to be presented. As usual, vkQueuePresentKHR may fail if oldSwapchain has
+   entered a state that causes VK_ERROR_OUT_OF_DATE_KHR to be returned.
+   The application can continue to use a shared presentable image obtained from
+   oldSwapchain until a presentable image is acquired from the new swapchain, as
+   long as it has not entered a state that causes it to return VK_ERROR_OUT_OF_DATE_KHR.
+---
+The VkSubpassDependency structure is defined as:
+typedef struct VkSubpassDependency {
+   uint32_t srcSubpass;
+   uint32_t dstSubpass;
+   VkPipelineStageFlags srcStageMask;
+   VkPipelineStageFlags dstStageMask;
+   VkAccessFlags srcAccessMask;
+   VkAccessFlags dstAccessMask;
+   VkDependencyFlags dependencyFlags;
+} VkSubpassDependency;
+
+   • srcSubpass is the subpass index of the first subpass in the dependency, or VK_SUBPASS_EXTERNAL.
+   • dstSubpass is the subpass index of the second subpass in the dependency, or
+	  SUBPASS_EXTERNAL.
+   • srcStageMask is a bitmask of VkPipelineStageFlagBits specifying the source stage mask.
+   • dstStageMask is a bitmask of VkPipelineStageFlagBits specifying the destination stage mask
+   • srcAccessMask is a bitmask of VkAccessFlagBits specifying a source access mask.
+   • dstAccessMask is a bitmask of VkAccessFlagBits specifying a destination access mask.
+   • dependencyFlags is a bitmask of VkDependencyFlagBits.
+
+pg.238 vkspec-with-all-extensions for more info about this
+
+---
+A logical device is created as a connection to a physical device. To create a logical device, call:
+VkResult vkCreateDevice(
+ VkPhysicalDevice physicalDevice,
+ const VkDeviceCreateInfo* pCreateInfo,
+ const VkAllocationCallbacks* pAllocator,
+ VkDevice* pDevice
+);
+   • physicalDevice must be one of the device handles returned from a call to
+   vkEnumeratePhysicalDevices (see Physical Device Enumeration).
+   • pCreateInfo is a pointer to a VkDeviceCreateInfo structure containing information about how to
+   create the device.
+   • pAllocator controls host memory allocation as described in the Memory Allocation chapter.
+   • pDevice points to a handle in which the created VkDevice is returned.
+
+typedef struct VkDeviceCreateInfo {
+   VkStructureType sType;
+   const void* pNext;
+   VkDeviceCreateFlags flags;
+   uint32_t queueCreateInfoCount;
+   const VkDeviceQueueCreateInfo* pQueueCreateInfos;
+   uint32_t enabledLayerCount;
+   const char* const* ppEnabledLayerNames;
+   uint32_t enabledExtensionCount;
+   const char* const* ppEnabledExtensionNames;
+   const VkPhysicalDeviceFeatures* pEnabledFeatures;
+} VkDeviceCreateInfo;
+
+   • sType is the type of this structure.
+
+   • pNext is NULL or a pointer to an extension-specific structure.
+
+   • flags is reserved for future use.
+
+   • queueCreateInfoCount is the unsigned integer size of the pQueueCreateInfos array. Refer to the
+	  Queue Creation section below for further details.
+
+   • pQueueCreateInfos is a pointer to an array of VkDeviceQueueCreateInfo structures describing the
+	  queues that are requested to be created along with the logical device. Refer to the Queue
+	  Creation section below for further details.
+
+   • enabledLayerCount is deprecated and ignored.
+
+   • ppEnabledLayerNames is deprecated and ignored. See Device Layer Deprecation.
+   
+   • enabledExtensionCount is the number of device extensions to enable.
+
+   • ppEnabledExtensionNames is a pointer to an array of enabledExtensionCount null-terminated UTF-8
+	  strings containing the names of extensions to enable for the created device. See the Extensions
+	  section for further details.
+
+   • pEnabledFeatures is NULL or a pointer to a VkPhysicalDeviceFeatures structure that contains
+	  boolean indicators of all the features to be enabled. Refer to the Features section for further
+	  details.
+
+---
+VkResult vkGetPhysicalDeviceSurfacePresentModesKHR(
+ 	VkPhysicalDevice physicalDevice,
+ 	VkSurfaceKHR surface,
+ 	uint32_t* pPresentModeCount,
+ 	VkPresentModeKHR* pPresentModes);
+• physicalDevice is the physical device that will be associated with the swapchain to be created, as described for vkCreateSwapchainKHR.
+• surface is the surface that will be associated with the swapchain.
+• pPresentModeCount is a pointer to an integer related to the number of presentation modes available or queried, as described below.
+• pPresentModes is either NULL or a pointer to an array of VkPresentModeKHR values, indicating the supported presentation modes.
+
+typedef enum VkPresentModeKHR {
+ VK_PRESENT_MODE_IMMEDIATE_KHR = 0,
+ VK_PRESENT_MODE_MAILBOX_KHR = 1,
+ VK_PRESENT_MODE_FIFO_KHR = 2,
+ VK_PRESENT_MODE_FIFO_RELAXED_KHR = 3,
+ VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR = 1000111000,
+ VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR = 1000111001,
+} VkPresentModeKHR;
+---
+VkResult vkCreateImage(
+ VkDevice device,
+ const VkImageCreateInfo* pCreateInfo,
+ const VkAllocationCallbacks* pAllocator,
+ VkImage* pImage);
+
+• device is the logical device that creates the image.
+• pCreateInfo is a pointer to an instance of the VkImageCreateInfo structure containing parameters
+   to be used to create the image.
+• pAllocator controls host memory allocation as described in the Memory Allocation chapter.
+• pImage points to a VkImage handle in which the resulting image object is returned
+
+
+typedef struct VkImageCreateInfo {
+ 	VkStructureType sType;
+ 	const void* pNext;
+
+ 	VkImageCreateFlags flags;
+
+ 	VkImageType imageType;
+ 	VkFormat format;
+ 	VkExtent3D extent;
+ 	uint32_t mipLevels;
+ 	uint32_t arrayLayers;
+ 	VkSampleCountFlagBits samples;
+ 	VkImageTiling tiling;
+ 	VkImageUsageFlags usage;
+ 	VkSharingMode sharingMode;
+ 	uint32_t queueFamilyIndexCount;
+ 	const uint32_t* pQueueFamilyIndices;
+ 	VkImageLayout initialLayout;
+} VkImageCreateInfo;
+
+• sType is the type of this structure.
+• pNext is NULL or a pointer to an extension-specific structure.
+
+• flags is a bitmask of VkImageCreateFlagBits describing additional parameters of the image.
+
+• imageType is a VkImageType value specifying the basic dimensionality of the image. Layers in
+array textures do not count as a dimension for the purposes of the image type.
+• format is a VkFormat describing the format and type of the texel blocks that will be contained in
+the image.
+• extent is a VkExtent3D describing the number of data elements in each dimension of the base
+level.
+• mipLevels describes the number of levels of detail available for minified sampling of the image.
+• arrayLayers is the number of layers in the image.
+• samples is a VkSampleCountFlagBits specifying the number of samples per texel.
+• tiling is a VkImageTiling value specifying the tiling arrangement of the texel blocks in memory.
+• usage is a bitmask of VkImageUsageFlagBits describing the intended usage of the image.
+• sharingMode is a VkSharingMode value specifying the sharing mode of the image when it will be
+accessed by multiple queue families.
+• queueFamilyIndexCount is the number of entries in the pQueueFamilyIndices array.
+• pQueueFamilyIndices is a list of queue families that will access this image (ignored if sharingMode
+is not VK_SHARING_MODE_CONCURRENT).
+• initialLayout is a VkImageLayout value specifying the initial VkImageLayout of all image
+subresources of the image. See Image Layouts
+
+typedef enum VkImageUsageFlagBits {
+   VK_IMAGE_USAGE_TRANSFER_SRC_BIT = 0x00000001,
+   VK_IMAGE_USAGE_TRANSFER_DST_BIT = 0x00000002,
+   VK_IMAGE_USAGE_SAMPLED_BIT = 0x00000004,
+   VK_IMAGE_USAGE_STORAGE_BIT = 0x00000008,
+   VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT = 0x00000010,
+   VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT = 0x00000020,
+   VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT = 0x00000040,
+   VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT = 0x00000080,
+   VK_IMAGE_USAGE_SHADING_RATE_IMAGE_BIT_NV = 0x00000100,
+   VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT = 0x00000200,
+} VkImageUsageFlagBits;
+
+• VK_IMAGE_USAGE_TRANSFER_SRC_BIT specifies that the image can be used as the source of a transfer command.
+  Chapter 11. Resource Creation | 453
+• VK_IMAGE_USAGE_TRANSFER_DST_BIT specifies that the image can be used as the destination of a transfer command.
+
+• VK_IMAGE_USAGE_SAMPLED_BIT specifies that the image can be used to create a VkImageView suitable
+  for occupying a VkDescriptorSet slot either of type VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE or VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 
+  and be sampled by a shader.
+
+• VK_IMAGE_USAGE_STORAGE_BIT specifies that the image can be used to create a VkImageView suitable for occupying a VkDescriptorSet slot of type VK_DESCRIPTOR_TYPE_STORAGE_IMAGE.
+
+• VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT specifies that the image can be used to create a VkImageView suitable for use as a color or resolve attachment in a VkFramebuffer.
+
+• VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT specifies that the image can be used to create a
+  VkImageView suitable for use as a depth/stencil or depth/stencil resolve attachment in a VkFramebuffer.
+
+• VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT specifies that the memory bound to this image will have been allocate 
+  with the VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT (see Memory Allocation for more detail). This bit can be set 
+  for any image that can be used to create a VkImageView
+  suitable for use as a color, resolve, depth/stencil, or input attachment.
+
+• VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT specifies that the image can be used to create a VkImageView suitable for 
+  occupying VkDescriptorSet slot of type
+  VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT; be read from a shader as an input attachment; and be used as an input attachment in a framebuffer.
+
+• VK_IMAGE_USAGE_SHADING_RATE_IMAGE_BIT_NV specifies that the image can be used to create a VkImageView suitable for use 
+   as a shading rate image.
+
+typedef VkFlags VkImageUsageFlags; // VkImageUsageFlags is a bitmask type for setting a mask of zero or more VkImageUsageFlagBits.
+
+
+void vkGetImageMemoryRequirements(
+ VkDevice device,
+ VkImage image,
+ VkMemoryRequirements* pMemoryRequirements);
+
+typedef struct VkMemoryRequirements {
+ VkDeviceSize size;
+ VkDeviceSize alignment;
+ uint32_t memoryTypeBits;
+} VkMemoryRequirements;
+
+• size is the size, in bytes, of the memory allocation required for the resource. 488 | Chapter 11. Resource Creation
+
+• alignment is the alignment, in bytes, of the offset within the allocation required for the resource.
+
+• memoryTypeBits is a bitmask and contains one bit set for every supported memory type for the
+   resource. Bit i is set if and only if the memory type i in the VkPhysicalDeviceMemoryProperties
+   structure for the physical device is supported for the resource.
+
+typedef struct VkPhysicalDeviceMemoryProperties {
+ 	uint32_t memoryTypeCount;
+ 	VkMemoryType memoryTypes[VK_MAX_MEMORY_TYPES];
+ 	uint32_t memoryHeapCount;
+ 	VkMemoryHeap memoryHeaps[VK_MAX_MEMORY_HEAPS];
+} VkPhysicalDeviceMemoryProperties;
+
+• memoryTypeCount is the number of valid elements in the memoryTypes array.
+
+• memoryTypes is an array of VkMemoryType structures describing the memory 
+   types that can be used to access memory allocated from the heaps specified by memoryHeaps.
+
+• memoryHeapCount is the number of valid elements in the memoryHeaps array.
+
+• memoryHeaps is an array of VkMemoryHeap structures describing the memory heaps from which memory can be allocated.
+
+typedef struct VkMemoryType {
+ 	VkMemoryPropertyFlags propertyFlags;
+ 	uint32_t heapIndex;
+} VkMemoryType;
+
+typedef enum VkMemoryPropertyFlagBits {
+ VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT = 0x00000001,
+ VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT = 0x00000002,
+ VK_MEMORY_PROPERTY_HOST_COHERENT_BIT = 0x00000004,
+ VK_MEMORY_PROPERTY_HOST_CACHED_BIT = 0x00000008,
+ VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT = 0x00000010,
+} VkMemoryPropertyFlagBits;
+
+• VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT bit specifies that memory allocated with this type is the
+   most efficient for device access. This property will be set if and only if the memory type belongs
+   370 | Chapter 10. Memory Allocation
+   to a heap with the VK_MEMORY_HEAP_DEVICE_LOCAL_BIT set.
+
+• VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT bit specifies that memory allocated with this type can be
+   mapped for host access using vkMapMemory.
+
+• VK_MEMORY_PROPERTY_HOST_COHERENT_BIT bit specifies that the host cache management commands
+   vkFlushMappedMemoryRanges and vkInvalidateMappedMemoryRanges are not needed to
+   flush host writes to the device or make device writes visible to the host, respectively.
+
+• VK_MEMORY_PROPERTY_HOST_CACHED_BIT bit specifies that memory allocated with this type is cached
+   on the host. Host memory accesses to uncached memory are slower than to cached memory,
+   however uncached memory is always host coherent.
+
+• VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT bit specifies that the memory type only allows device
+   access to the memory. Memory types must not have both
+   VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT and VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT set.
+   Additionally, the object’s backing memory may be provided by the implementation lazily as
+   specified in Lazily Allocated Memory.
+   typedef VkFlags VkMemoryPropertyFlags;
+---
+VkResult vkAllocateMemory(
+   VkDevice device,
+   const VkMemoryAllocateInfo* pAllocateInfo,
+   const VkAllocationCallbacks* pAllocator,
+VkDeviceMemory* pMemory);
+
+• device is the logical device that owns the memory.
+
+• pAllocateInfo is a pointer to an instance of the VkMemoryAllocateInfo structure describing
+   parameters of the allocation. A successful returned allocation must use the requested
+   parameters — no substitution is permitted by the implementation.
+
+• pAllocator controls host memory allocation as described in the Memory Allocation chapter.
+
+• pMemory is a pointer to a VkDeviceMemory handle in which information about the allocated
+   memory is returned.
+---
+typedef struct VkMemoryAllocateInfo {
+   VkStructureType sType;
+   const void* pNext;
+   VkDeviceSize allocationSize;
+   uint32_t memoryTypeIndex;
+} VkMemoryAllocateInfo;
+
+   • sType is the type of this structure.
+
+   • pNext is NULL or a pointer to an extension-specific structure.
+
+   • allocationSize is the size of the allocation in bytes
+
+   • memoryTypeIndex is an index identifying a memory type from the memoryTypes array of the
+	  VkPhysicalDeviceMemoryProperties structure
+---
+typedef struct VkPhysicalDeviceMemoryProperties {
+   uint32_t memoryTypeCount;
+   VkMemoryType memoryTypes[VK_MAX_MEMORY_TYPES];
+   uint32_t memoryHeapCount;
+   VkMemoryHeap memoryHeaps[VK_MAX_MEMORY_HEAPS];
+} VkPhysicalDeviceMemoryProperties;
+
+   • memoryTypeCount is the number of valid elements in the memoryTypes array.
+
+   • memoryTypes is an array of VkMemoryType structures describing the memory types that can be
+	  used to access memory allocated from the heaps specified by memoryHeaps.
+
+   • memoryHeapCount is the number of valid elements in the memoryHeaps array.
+
+   • memoryHeaps is an array of VkMemoryHeap structures describing the memory heaps from which
+	  memory can be allocated.
+---
+VkResult vkCreateImageView(
+ VkDevice device,
+ const VkImageViewCreateInfo* pCreateInfo,
+ const VkAllocationCallbacks* pAllocator,
+ VkImageView* pView);
+
+• device is the logical device that creates the image view.
+
+• pCreateInfo is a pointer to an instance of the VkImageViewCreateInfo structure containing
+   parameters to be used to create the image view.
+
+• pAllocator controls host memory allocation as described in the Memory Allocation chapter.
+
+• pView points to a VkImageView handle in which the resulting image view object is returned.
+
+typedef struct VkImageViewCreateInfo {
+ 	VkStructureType sType;
+ 	const void* pNext;
+ 	VkImageViewCreateFlags flags;
+ 	VkImage image;
+ 	VkImageViewType viewType;
+ 	VkFormat format;
+ 	VkComponentMapping components;
+ 	VkImageSubresourceRange subresourceRange;
+} VkImageViewCreateInfo;
+
+• sType is the type of this structure.
+
+• pNext is NULL or a pointer to an extension-specific structure.
+
+• flags is a bitmask of VkImageViewCreateFlagBits describing additional parameters of the image view.
+• image is a VkImage on which the view will be created.
+
+• viewType is a VkImageViewType value specifying the type of the image view.
+
+• format is a VkFormat describing the format and type used to interpret texel blocks in the image.
+
+• components is a VkComponentMapping specifies a remapping of color components (or of depth
+   or stencil components after they have been converted into color components).
+
+• subresourceRange is a VkImageSubresourceRange selecting the set of mipmap levels and array
+   layers to be accessible to the view.
+---
+typedef enum VkImageViewCreateFlagBits {
+   VK_IMAGE_VIEW_CREATE_FRAGMENT_DENSITY_MAP_DYNAMIC_BIT_EXT = 0x00000001,
+} VkImageViewCreateFlagBits;
+---
+typedef enum VkImageViewType {
+ 	VK_IMAGE_VIEW_TYPE_1D = 0,
+ 	VK_IMAGE_VIEW_TYPE_2D = 1,
+ 	VK_IMAGE_VIEW_TYPE_3D = 2,
+ 	VK_IMAGE_VIEW_TYPE_CUBE = 3,
+ 	VK_IMAGE_VIEW_TYPE_1D_ARRAY = 4,
+ 	VK_IMAGE_VIEW_TYPE_2D_ARRAY = 5,
+ 	VK_IMAGE_VIEW_TYPE_CUBE_ARRAY = 6,
+} VkImageViewType;
+---
+typedef struct VkComponentMapping {
+ 	VkComponentSwizzle r;
+ 	VkComponentSwizzle g;
+ 	VkComponentSwizzle b;
+ 	VkComponentSwizzle a;
+} VkComponentMapping;
+
+• r is a VkComponentSwizzle specifying the component value placed in the R component of the
+   output vector.
+
+• g is a VkComponentSwizzle specifying the component value placed in the G component of the
+   output vector.
+
+• b is a VkComponentSwizzle specifying the component value placed in the B component of the
+   output vector.
+
+• a is a VkComponentSwizzle specifying the component value placed in the A component of the
+   output vector.
+
+Chapter 11. Resource Creation | 481
+
+Valid Usage (Implicit)
+• r must be a valid VkComponentSwizzle value
+• g must be a valid VkComponentSwizzle value
+• b must be a valid VkComponentSwizzle value
+• a must be a valid VkComponentSwizzle value
+---
+typedef struct VkImageSubresourceRange {
+   VkImageAspectFlags aspectMask;
+   uint32_t baseMipLevel;
+   uint32_t levelCount;
+   uint32_t baseArrayLayer;
+   uint32_t layerCount;
+} VkImageSubresourceRange;
+
+• aspectMask is a bitmask of VkImageAspectFlagBits specifying which aspect(s) of the image are
+   included in the view.
+
+• baseMipLevel is the first mipmap level accessible to the view.
+
+• levelCount is the number of mipmap levels (starting from baseMipLevel) accessible to the view.
+
+• baseArrayLayer is the first array layer accessible to the view.
+
+• layerCount is the number of array layers (starting from baseArrayLayer) accessible to the view.
+---
+typedef enum VkImageAspectFlagBits {
+
+   VK_IMAGE_ASPECT_COLOR_BIT = 0x00000001,
+   VK_IMAGE_ASPECT_DEPTH_BIT = 0x00000002,
+   VK_IMAGE_ASPECT_STENCIL_BIT = 0x00000004,
+   VK_IMAGE_ASPECT_METADATA_BIT = 0x00000008,
+
+   VK_IMAGE_ASPECT_PLANE_0_BIT = 0x00000010,
+   VK_IMAGE_ASPECT_PLANE_1_BIT = 0x00000020,
+   VK_IMAGE_ASPECT_PLANE_2_BIT = 0x00000040,
+
+   VK_IMAGE_ASPECT_MEMORY_PLANE_0_BIT_EXT = 0x00000080,
+   VK_IMAGE_ASPECT_MEMORY_PLANE_1_BIT_EXT = 0x00000100,
+   VK_IMAGE_ASPECT_MEMORY_PLANE_2_BIT_EXT = 0x00000200,
+   VK_IMAGE_ASPECT_MEMORY_PLANE_3_BIT_EXT = 0x00000400,
+
+   VK_IMAGE_ASPECT_PLANE_0_BIT_KHR = VK_IMAGE_ASPECT_PLANE_0_BIT,
+   VK_IMAGE_ASPECT_PLANE_1_BIT_KHR = VK_IMAGE_ASPECT_PLANE_1_BIT,
+   VK_IMAGE_ASPECT_PLANE_2_BIT_KHR = VK_IMAGE_ASPECT_PLANE_2_BIT,
+
+} VkImageAspectFlagBits;
+
+• VK_IMAGE_ASPECT_COLOR_BIT specifies the color aspect.
+
+• VK_IMAGE_ASPECT_DEPTH_BIT specifies the depth aspect.
+
+• VK_IMAGE_ASPECT_STENCIL_BIT specifies the stencil aspect.
+
+• VK_IMAGE_ASPECT_METADATA_BIT specifies the metadata aspect, used for sparse sparse resource
+   operations.
+---
+typedef VkFlags VkImageAspectFlags;
+
+   To create a framebuffer, call:
+VkResult vkCreateFramebuffer(
+ 	VkDevice device,
+ 	const VkFramebufferCreateInfo* pCreateInfo,
+ 	const VkAllocationCallbacks* pAllocator,
+ 	VkFramebuffer* pFramebuffer);
+
+• device is the logical device that creates the framebuffer.
+
+• pCreateInfo points to a VkFramebufferCreateInfo structure which describes additional
+   information about framebuffer creation.
+
+• pAllocator controls host memory allocation as described in the Memory Allocation chapter.
+
+• pFramebuffer points to a VkFramebuffer handle in which the resulting framebuffer object is
+returned.
+
+
+typedef struct VkFramebufferCreateInfo {
+ VkStructureType sType;
+ const void* pNext;
+ VkFramebufferCreateFlags flags; //reserved for future crea
+ VkRenderPass renderPass;
+ uint32_t attachmentCount;
+ const VkImageView* pAttachments;
+ uint32_t width;
+ uint32_t height;
+ uint32_t layers;
+} VkFramebufferCreateInfo;
+
+• sType is the type of this structure.
+
+• pNext is NULL or a pointer to an extension-specific structure.
+
+• flags is reserved for future use.
+
+• renderPass is a render pass that defines what render passes the framebuffer will be compatible
+   with. See Render Pass Compatibility for details.
+
+• attachmentCount is the number of attachments.
+
+• pAttachments is an array of VkImageView handles, each of which will be used as the
+   corresponding attachment in a render pass instance.
+
+• width, height and layers define the dimensions of the framebuffer. If the render pass uses
+   multiview, then layers must be one and each attachment requires a number of layers that is
+   greater than the maximum bit index set in the view mask in the subpasses in which it is used.
+
+
+VkResult vkCreateBuffer(
+   VkDevice device,
+   const VkBufferCreateInfo* pCreateInfo,
+   const VkAllocationCallbacks* pAllocator,
+VkBuffer* pBuffer);
+
+• device is the logical device that creates the buffer object.
+
+• pCreateInfo is a pointer to an instance of the VkBufferCreateInfo structure containing
+   parameters affecting creation of the buffer.
+
+• pAllocator controls host memory allocation as described in the Memory Allocation chapter.
+
+• pBuffer points to a VkBuffer handle in which the resulting buffer object is returned.
+
+
+
+typedef struct VkBufferCreateInfo {
+ 	VkStructureType sType;
+ 	const void* pNext;
+ 	VkBufferCreateFlags flags;
+ 	VkDeviceSize size;
+ 	VkBufferUsageFlags usage;
+ 	VkSharingMode sharingMode;
+ 	uint32_t queueFamilyIndexCount;
+ 	const uint32_t* pQueueFamilyIndices;
+} VkBufferCreateInfo;
+
+• sType is the type of this structure.
+
+• pNext is NULL or a pointer to an extension-specific structure.
+
+• flags is a bitmask of VkBufferCreateFlagBits specifying additional parameters of the buffer.
+
+• size is the size in bytes of the buffer to be created.
+
+• usage is a bitmask of VkBufferUsageFlagBits specifying allowed usages of the buffer.
+
+• sharingMode is a VkSharingMode value specifying the sharing mode of the buffer when it will be
+   accessed by multiple queue families.
+
+• queueFamilyIndexCount is the number of entries in the pQueueFamilyIndices array.
+
+• pQueueFamilyIndices is a list of queue families that will access this buffer (ignored if sharingMode
+   is not VK_SHARING_MODE_CONCURRENT).
+424 | Chapter 11. Resource Creation
+   Valid Usage
+
+• size must be greater than 0
+
+• If sharingMode is VK_SHARING_MODE_CONCURRENT, pQueueFamilyIndices must be a valid pointer
+   to an array of queueFamilyIndexCount uint32_t values
+
+• If sharingMode is VK_SHARING_MODE_CONCURRENT, queueFamilyIndexCount must be greater than 1
+
+• If sharingMode is VK_SHARING_MODE_CONCURRENT, each element of pQueueFamilyIndices must be
+   unique and must be less than pQueueFamilyPropertyCount returned by either
+   vkGetPhysicalDeviceQueueFamilyProperties or
+   vkGetPhysicalDeviceQueueFamilyProperties2 for the physicalDevice that was used to
+   create device
+
+• If the sparse bindings feature is not enabled, flags must not contain
+   VK_BUFFER_CREATE_SPARSE_BINDING_BIT
+
+• If the sparse buffer residency feature is not enabled, flags must not contain
+   VK_BUFFER_CREATE_SPARSE_RESIDENCY_BIT
+
+• If the sparse aliased residency feature is not enabled, flags must not contain
+   VK_BUFFER_CREATE_SPARSE_ALIASED_BIT
+
+• If flags contains VK_BUFFER_CREATE_SPARSE_RESIDENCY_BIT or
+   VK_BUFFER_CREATE_SPARSE_ALIASED_BIT, it must also contain
+   VK_BUFFER_CREATE_SPARSE_BINDING_BIT
+
+• If the pNext chain contains an instance of VkExternalMemoryBufferCreateInfo, its
+   handleTypes member must only contain bits that are also in VkExternalBufferProperties
+   ::externalMemoryProperties.compatibleHandleTypes, as returned by
+   vkGetPhysicalDeviceExternalBufferProperties with pExternalBufferInfo->handleType equal
+   to any one of the handle types specified in VkExternalMemoryBufferCreateInfo
+   ::handleTypes
+
+• If the pNext chain contains an instance of VkDedicatedAllocationBufferCreateInfoNV, and
+   the dedicatedAllocation member of the chained structure is VK_TRUE, then flags must not
+   include VK_BUFFER_CREATE_SPARSE_BINDING_BIT, VK_BUFFER_CREATE_SPARSE_RESIDENCY_BIT, or
+   VK_BUFFER_CREATE_SPARSE_ALIASED_BIT
+
+• If VkBufferDeviceAddressCreateInfoEXT::deviceAddress is not zero, flags must include
+   VK_BUFFER_CREATE_DEVICE_ADDRESS_CAPTURE_REPLAY_BIT_EXT
+• If flags includes VK_BUFFER_CREATE_DEVICE_ADDRESS_CAPTURE_REPLAY_BIT_EXT, the
+   bufferDeviceAddressCaptureReplay feature must be enabled
+
+• If usage includes VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT_EXT, the bufferDeviceAddress
+   feature must be enabled
+   Chapter 11. Resource Creation | 425
+   Valid Usage (Implicit)
+
+• sType must be VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO
+
+• Each pNext member of any structure (including this one) in the pNext chain must be either
+   NULL or a pointer to a valid instance of VkBufferDeviceAddressCreateInfoEXT,
+   VkDedicatedAllocationBufferCreateInfoNV, or VkExternalMemoryBufferCreateInfo
+
+• Each sType member in the pNext chain must be unique
+
+• flags must be a valid combination of VkBufferCreateFlagBits values
+
+• usage must be a valid combination of VkBufferUsageFlagBits values
+
+• usage must not be 0
+
+• sharingMode must be a valid VkSharingMode value
+
+Bits which can be set in VkBufferCreateInfo::usage, specifying usage behavior of a buffer, are:
+
+typedef enum VkBufferUsageFlagBits {
+ 	VK_BUFFER_USAGE_TRANSFER_SRC_BIT = 0x00000001,
+ 	VK_BUFFER_USAGE_TRANSFER_DST_BIT = 0x00000002,
+ 	VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT = 0x00000004,
+ 	VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT = 0x00000008,
+ 	VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT = 0x00000010,
+ 	VK_BUFFER_USAGE_STORAGE_BUFFER_BIT = 0x00000020,
+ 	VK_BUFFER_USAGE_INDEX_BUFFER_BIT = 0x00000040,
+ 	VK_BUFFER_USAGE_VERTEX_BUFFER_BIT = 0x00000080,
+ 	VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT = 0x00000100,
+ 	VK_BUFFER_USAGE_TRANSFORM_FEEDBACK_BUFFER_BIT_EXT = 0x00000800,
+ 	VK_BUFFER_USAGE_TRANSFORM_FEEDBACK_COUNTER_BUFFER_BIT_EXT = 0x00001000,
+ 	VK_BUFFER_USAGE_CONDITIONAL_RENDERING_BIT_EXT = 0x00000200,
+ 	VK_BUFFER_USAGE_RAY_TRACING_BIT_NV = 0x00000400,
+ 	VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT_EXT = 0x00020000,
+} VkBufferUsageFlagBits;
+
+
+• VK_BUFFER_USAGE_TRANSFER_SRC_BIT specifies that the buffer can be used as the source of a
+   transfer command (see the definition of VK_PIPELINE_STAGE_TRANSFER_BIT).
+
+• VK_BUFFER_USAGE_TRANSFER_DST_BIT specifies that the buffer can be used as the destination of a
+   transfer command.
+
+• VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT specifies that the buffer can be used to create a
+   VkBufferView suitable for occupying a VkDescriptorSet slot of type
+   VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER.
+
+• VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT specifies that the buffer can be used to create a
+   VkBufferView suitable for occupying a VkDescriptorSet slot of type
+   VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER.
+
+• VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT specifies that the buffer can be used in a
+   VkDescriptorBufferInfo suitable for occupying a VkDescriptorSet slot either of type
+   426 | Chapter 11. Resource Creation
+   VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER or VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC.
+
+• VK_BUFFER_USAGE_STORAGE_BUFFER_BIT specifies that the buffer can be used in a
+   VkDescriptorBufferInfo suitable for occupying a VkDescriptorSet slot either of type
+   VK_DESCRIPTOR_TYPE_STORAGE_BUFFER or VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC.
+
+• VK_BUFFER_USAGE_INDEX_BUFFER_BIT specifies that the buffer is suitable for passing as the buffer
+   parameter to vkCmdBindIndexBuffer.
+
+• VK_BUFFER_USAGE_VERTEX_BUFFER_BIT specifies that the buffer is suitable for passing as an element
+   of the pBuffers array to vkCmdBindVertexBuffers.
+
+• VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT specifies that the buffer is suitable for passing as the
+   buffer parameter to vkCmdDrawIndirect, vkCmdDrawIndexedIndirect, vkCmdDrawMeshTasksIndirectNV,
+   vkCmdDrawMeshTasksIndirectCountNV, or vkCmdDispatchIndirect. It is also suitable for passing as
+   the buffer member of VkIndirectCommandsTokenNVX, or sequencesCountBuffer or
+   sequencesIndexBuffer member of VkCmdProcessCommandsInfoNVX
+
+• VK_BUFFER_USAGE_CONDITIONAL_RENDERING_BIT_EXT specifies that the buffer is suitable for passing
+   as the buffer parameter to vkCmdBeginConditionalRenderingEXT.
+
+• VK_BUFFER_USAGE_TRANSFORM_FEEDBACK_BUFFER_BIT_EXT specifies that the buffer is suitable for using
+   for binding as a transform feedback buffer with vkCmdBindTransformFeedbackBuffersEXT.
+
+• VK_BUFFER_USAGE_TRANSFORM_FEEDBACK_COUNTER_BUFFER_BIT_EXT specifies that the buffer is suitable
+   for using as a counter buffer with vkCmdBeginTransformFeedbackEXT and
+   vkCmdEndTransformFeedbackEXT.
+
+• VK_BUFFER_USAGE_RAY_TRACING_BIT_NV specifies that the buffer is suitable for use in
+   vkCmdTraceRaysNV and vkCmdBuildAccelerationStructureNV.
+
+• VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT_EXT specifies that the buffer can be used to retrieve
+   a buffer device address via vkGetBufferDeviceAddressEXT and use that address to access the
+   buffer’s memory from a shader.
+   typedef VkFlags VkBufferUsageFlags;
+---
+typedef struct VkBufferCopy {
+   VkDeviceSize srcOffset;
+   VkDeviceSize dstOffset;
+   VkDeviceSize size;
+} VkBufferCopy;
+
+srcOffset is the starting offset in bytes from the start of srcBuffer.
+
+   • dstOffset is the starting offset in bytes from the start of dstBuffer.
+
+   • size is the number of bytes to copy.
+
+---
+VkResult vkCreateComputePipelines(
+ 	VkDevice device,
+ 	VkPipelineCache pipelineCache,
+ 	uint32_t createInfoCount,
+ 	const VkComputePipelineCreateInfo* pCreateInfos,
+ 	const VkAllocationCallbacks* pAllocator,
+ 	VkPipeline* pPipelines);
+
+• device is the logical device that creates the compute pipelines.
+• pipelineCache is either VK_NULL_HANDLE, indicating that pipeline caching is disabled; or the
+   handle of a valid pipeline cache object, in which case use of that cache is enabled for the
+   duration of the command.
+• createInfoCount is the length of the pCreateInfos and pPipelines arrays.
+• pCreateInfos is an array of VkComputePipelineCreateInfo structures.
+• pAllocator controls host memory allocation as described in the Memory Allocation chapter.
+• pPipelines is a pointer to an array in which the resulting compute pipeline objects are returned.
+---
+VkResult vkCreateGraphicsPipelines(
+ 	VkDevice device,
+ 	VkPipelineCache pipelineCache,
+ 	uint32_t createInfoCount,
+ 	const VkGraphicsPipelineCreateInfo* pCreateInfos,
+ 	const VkAllocationCallbacks* pAllocator,
+ 	VkPipeline* pPipelines);
+
+• device is the logical device that creates the graphics pipelines.
+• pipelineCache is either VK_NULL_HANDLE, indicating that pipeline caching is disabled; or the
+   handle of a valid pipeline cache object, in which case use of that cache is enabled for the
+   duration of the command.
+• createInfoCount is the length of the pCreateInfos and pPipelines arrays.
+• pCreateInfos is an array of VkGraphicsPipelineCreateInfo structures.
+• pAllocator controls host memory allocation as described in the Memory Allocation chapter.
+• pPipelines is a pointer to an array in which the resulting graphics pipeline objects are returned.
+---
+VkResult vkCreatePipelineCache(
+   VkDevice device,
+   const VkPipelineCacheCreateInfo* pCreateInfo,
+   const VkAllocationCallbacks* pAllocator,
+   VkPipelineCache* pPipelineCache);
+• device is the logical device that creates the pipeline cache object.
+• pCreateInfo is a pointer to a VkPipelineCacheCreateInfo structure that contains the initial
+   parameters for the pipeline cache object.
+• pAllocator controls host memory allocation as described in the Memory Allocation chapter.
+pPipelineCache is a pointer to a VkPipelineCache handle in which the resulting pipeline cache
+   object is returned.
+
+332 | Chapter 9. Pipelines
+
+Note
+   Applications can track and manage the total host memory size of a pipeline cache
+   object using the pAllocator. Applications can limit the amount of data retrieved
+   from a pipeline cache object in vkGetPipelineCacheData. Implementations should
+   not internally limit the total number of entries added to a pipeline cache object or
+   the total host memory consumed.
+---
+typedef struct VkPipelineCacheCreateInfo {
+   VkStructureType sType;
+   const void* pNext;
+   VkPipelineCacheCreateFlags flags;//reserved for future crew
+   size_t initialDataSize;
+   const void* pInitialData;
+} VkPipelineCacheCreateInfo;
+
+• sType is the type of this structure.
+• pNext is NULL or a pointer to an extension-specific structure.
+• flags is reserved for future use.
+• initialDataSize is the number of bytes in pInitialData. If initialDataSize is zero, the pipeline
+   cache will initially be empty.
+• pInitialData is a pointer to previously retrieved pipeline cache data. If the pipeline cache data is
+   incompatible (as defined below) with the device, the pipeline cache will be initially empty. If
+   initialDataSize is zero, pInitialData is ignored.
+---
+typedef struct VkGraphicsPipelineCreateInfo {
+   VkStructureType sType;
+   const void* pNext;
+   
+   VkPipelineCreateFlags flags;
+   uint32_t stageCount;
+
+   const VkPipelineShaderStageCreateInfo* pStages;
+   const VkPipelineVertexInputStateCreateInfo* pVertexInputState;
+   const VkPipelineInputAssemblyStateCreateInfo* pInputAssemblyState;
+   const VkPipelineTessellationStateCreateInfo* pTessellationState;
+   const VkPipelineViewportStateCreateInfo* pViewportState;
+   const VkPipelineRasterizationStateCreateInfo* pRasterizationState;
+   const VkPipelineMultisampleStateCreateInfo* pMultisampleState;
+   const VkPipelineDepthStencilStateCreateInfo* pDepthStencilState;
+   const VkPipelineColorBlendStateCreateInfo* pColorBlendState;
+   const VkPipelineDynamicStateCreateInfo* pDynamicState;
+   
+   VkPipelineLayout layout;
+   
+   VkRenderPass renderPass;
+   
+   uint32_t subpass;
+   
+   VkPipeline basePipelineHandle;
+   
+   int32_t basePipelineIndex;
+
+} VkGraphicsPipelineCreateInfo;
+---
+typedef enum VkPipelineCreateFlagBits {
+   VK_PIPELINE_CREATE_DISABLE_OPTIMIZATION_BIT = 0x00000001,
+   VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT = 0x00000002,
+   VK_PIPELINE_CREATE_DERIVATIVE_BIT = 0x00000004,
+   VK_PIPELINE_CREATE_VIEW_INDEX_FROM_DEVICE_INDEX_BIT = 0x00000008,
+   VK_PIPELINE_CREATE_DISPATCH_BASE = 0x00000010,
+   VK_PIPELINE_CREATE_DEFER_COMPILE_BIT_NV = 0x00000020,
+   VK_PIPELINE_CREATE_VIEW_INDEX_FROM_DEVICE_INDEX_BIT_KHR =
+   VK_PIPELINE_CREATE_VIEW_INDEX_FROM_DEVICE_INDEX_BIT,
+   VK_PIPELINE_CREATE_DISPATCH_BASE_KHR = VK_PIPELINE_CREATE_DISPATCH_BASE,
+} VkPipelineCreateFlagBits;
+
+• VK_PIPELINE_CREATE_DISABLE_OPTIMIZATION_BIT specifies that the created pipeline will not be
+   optimized. Using this flag may reduce the time taken to create the pipeline.
+
+• VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT specifies that the pipeline to be created is allowed to
+   be the parent of a pipeline that will be created in a subsequent call to
+   vkCreateGraphicsPipelines or vkCreateComputePipelines.
+
+• VK_PIPELINE_CREATE_DERIVATIVE_BIT specifies that the pipeline to be created will be a child of a
+   previously created parent pipeline.
+
+• VK_PIPELINE_CREATE_VIEW_INDEX_FROM_DEVICE_INDEX_BIT specifies that any shader input variables
+   decorated as ViewIndex will be assigned values as if they were decorated as DeviceIndex.
+
+• VK_PIPELINE_CREATE_DISPATCH_BASE specifies that a compute pipeline can be used with
+   vkCmdDispatchBase with a non-zero base workgroup.
+
+• VK_PIPELINE_CREATE_DEFER_COMPILE_BIT_NV specifies that a pipeline is created with all shaders in
+   the deferred state. Before using the pipeline the application must call vkCompileDeferredNV
+   exactly once on each shader in the pipeline before using the pipeline.
+---
+   To create a descriptor pool object, call:
+VkResult vkCreateDescriptorPool(
+   VkDevice device,
+   const VkDescriptorPoolCreateInfo* pCreateInfo,
+   const VkAllocationCallbacks* pAllocator,
+   VkDescriptorPool* pDescriptorPool
+);
+
+   • device is the logical device that creates the descriptor pool.
+
+   • pCreateInfo is a pointer to an instance of the VkDescriptorPoolCreateInfo structure specifying
+	  the state of the descriptor pool object.
+
+   • pAllocator controls host memory allocation as described in the Memory Allocation chapter.
+
+   • pDescriptorPool points to a VkDescriptorPool handle in which the resulting descriptor pool
+	  object is returned.
+
+typedef struct VkDescriptorPoolCreateInfo {
+   VkStructureType sType;
+   const void* pNext;
+
+   VkDescriptorPoolCreateFlags flags;
+   uint32_t maxSets;
+   uint32_t poolSizeCount;
+
+   const VkDescriptorPoolSize* pPoolSizes;
+} VkDescriptorPoolCreateInfo;
+---
+typedef struct VkDescriptorPoolSize {
+   VkDescriptorType type;
+   uint32_t descriptorCount;
+} VkDescriptorPoolSize;
+
+   • type is the type of descriptor.
+
+   • descriptorCount is the number of descriptors of that type to allocate. If type is
+	  VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT then descriptorCount is the number of bytes to
+	  allocate for descriptors of this type.
+---
+typedef enum VkDescriptorType {
+   VK_DESCRIPTOR_TYPE_SAMPLER = 0,
+   VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER = 1,
+   VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE = 2,
+   VK_DESCRIPTOR_TYPE_STORAGE_IMAGE = 3,
+   VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER = 4,
+   VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER = 5,
+   VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER = 6,
+   VK_DESCRIPTOR_TYPE_STORAGE_BUFFER = 7,
+   VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC = 8,
+   VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC = 9,
+   VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT = 10,
+   VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT = 1000138000,
+   VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV = 1000165000,
+} VkDescriptorType;
+---
+VkResult vkCreateBuffer(
+   VkDevice device,
+
+   const VkBufferCreateInfo* pCreateInfo,
+   const VkAllocationCallbacks* pAllocator,
+
+   VkBuffer* pBuffer
+);
+
+   • device is the logical device that creates the buffer object.
+
+   • pCreateInfo is a pointer to an instance of the VkBufferCreateInfo structure containing
+	  parameters affecting creation of the buffer.
+
+   • pAllocator controls host memory allocation as described in the Memory Allocation chapter.
+
+   • pBuffer points to a VkBuffer handle in which the resulting buffer object is returned.
+---
+typedef struct VkBufferCreateInfo {
+
+   VkStructureType sType;
+   const void* pNext;
+
+   VkBufferCreateFlags flags;
+   VkDeviceSize size;
+   VkBufferUsageFlags usage;
+   VkSharingMode sharingMode;
+
+   uint32_t queueFamilyIndexCount;
+   const uint32_t* pQueueFamilyIndices;
+
+} VkBufferCreateInfo;
+
+   • sType is the type of this structure.
+   • pNext is NULL or a pointer to an extension-specific structure.
+   • flags is a bitmask of VkBufferCreateFlagBits specifying additional parameters of the buffer.
+   • size is the size in bytes of the buffer to be created.
+   • usage is a bitmask of VkBufferUsageFlagBits specifying allowed usages of the buffer.
+   • sharingMode is a VkSharingMode value specifying the sharing mode of the buffer when it will be
+	  accessed by multiple queue families.
+   • queueFamilyIndexCount is the number of entries in the pQueueFamilyIndices array.
+   • pQueueFamilyIndices is a list of queue families that will access this buffer (ignored if sharingMode
+	  is not VK_SHARING_MODE_CONCURRENT).
+---
+typedef enum VkBufferCreateFlagBits {
+   VK_BUFFER_CREATE_SPARSE_BINDING_BIT = 0x00000001,
+   VK_BUFFER_CREATE_SPARSE_RESIDENCY_BIT = 0x00000002,
+   VK_BUFFER_CREATE_SPARSE_ALIASED_BIT = 0x00000004,
+   VK_BUFFER_CREATE_DEVICE_ADDRESS_CAPTURE_REPLAY_BIT_EXT = 0x00000010,
+} VkBufferCreateFlagBits;
+typedef VkFlags VkBufferCreateFlags;
+
+   • VK_BUFFER_CREATE_SPARSE_BINDING_BIT specifies that the buffer will be backed using sparse
+      memory binding.
+   
+   • VK_BUFFER_CREATE_SPARSE_RESIDENCY_BIT specifies that the buffer can be partially backed using
+      Chapter 11. Resource Creation | 427
+      sparse memory binding. Buffers created with this flag must also be created with the
+      VK_BUFFER_CREATE_SPARSE_BINDING_BIT flag.
+   
+   • VK_BUFFER_CREATE_SPARSE_ALIASED_BIT specifies that the buffer will be backed using sparse
+      memory binding with memory ranges that might also simultaneously be backing another buffer
+      (or another portion of the same buffer). Buffers created with this flag must also be created with
+      the VK_BUFFER_CREATE_SPARSE_BINDING_BIT flag.
+   
+   • VK_BUFFER_CREATE_DEVICE_ADDRESS_CAPTURE_REPLAY_BIT_EXT specifies that the buffer’s address can
+      be saved and reused on a subsequent run (e.g. for trace capture and replay), see
+      VkBufferDeviceAddressCreateInfoEXT for more detail.
+---
+typedef enum VkBufferUsageFlagBits {
+   VK_BUFFER_USAGE_TRANSFER_SRC_BIT = 0x00000001,
+   VK_BUFFER_USAGE_TRANSFER_DST_BIT = 0x00000002,
+   VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT = 0x00000004,
+   VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT = 0x00000008,
+   VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT = 0x00000010,
+   VK_BUFFER_USAGE_STORAGE_BUFFER_BIT = 0x00000020,
+   VK_BUFFER_USAGE_INDEX_BUFFER_BIT = 0x00000040,
+   VK_BUFFER_USAGE_VERTEX_BUFFER_BIT = 0x00000080,
+   VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT = 0x00000100,
+   VK_BUFFER_USAGE_TRANSFORM_FEEDBACK_BUFFER_BIT_EXT = 0x00000800,
+   VK_BUFFER_USAGE_TRANSFORM_FEEDBACK_COUNTER_BUFFER_BIT_EXT = 0x00001000,
+   VK_BUFFER_USAGE_CONDITIONAL_RENDERING_BIT_EXT = 0x00000200,
+   VK_BUFFER_USAGE_RAY_TRACING_BIT_NV = 0x00000400,
+   VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT_EXT = 0x00020000,
+} VkBufferUsageFlagBits;
+
+• VK_BUFFER_USAGE_TRANSFER_SRC_BIT specifies that the buffer can be used as the source of a
+   transfer command (see the definition of VK_PIPELINE_STAGE_TRANSFER_BIT).
+
+• VK_BUFFER_USAGE_TRANSFER_DST_BIT specifies that the buffer can be used as the destination of a
+   transfer command.
+
+• VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT specifies that the buffer can be used to create a
+   VkBufferView suitable for occupying a VkDescriptorSet slot of type
+   VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER.
+
+• VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT specifies that the buffer can be used to create a
+   VkBufferView suitable for occupying a VkDescriptorSet slot of type
+   VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER.
+
+• VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT specifies that the buffer can be used in a
+   VkDescriptorBufferInfo suitable for occupying a VkDescriptorSet slot either of type
+   426 | Chapter 11. Resource Creation
+   VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER or VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC.
+
+• VK_BUFFER_USAGE_STORAGE_BUFFER_BIT specifies that the buffer can be used in a
+   VkDescriptorBufferInfo suitable for occupying a VkDescriptorSet slot either of type
+   VK_DESCRIPTOR_TYPE_STORAGE_BUFFER or VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC.
+
+• VK_BUFFER_USAGE_INDEX_BUFFER_BIT specifies that the buffer is suitable for passing as the buffer
+   parameter to vkCmdBindIndexBuffer.
+
+• VK_BUFFER_USAGE_VERTEX_BUFFER_BIT specifies that the buffer is suitable for passing as an element
+   of the pBuffers array to vkCmdBindVertexBuffers.
+
+• VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT specifies that the buffer is suitable for passing as the
+   buffer parameter to vkCmdDrawIndirect, vkCmdDrawIndexedIndirect, vkCmdDrawMeshTasksIndirectNV,
+   vkCmdDrawMeshTasksIndirectCountNV, or vkCmdDispatchIndirect. It is also suitable for passing as
+   the buffer member of VkIndirectCommandsTokenNVX, or sequencesCountBuffer or
+   sequencesIndexBuffer member of VkCmdProcessCommandsInfoNVX
+
+• VK_BUFFER_USAGE_CONDITIONAL_RENDERING_BIT_EXT specifies that the buffer is suitable for passing
+   as the buffer parameter to vkCmdBeginConditionalRenderingEXT.
+
+• VK_BUFFER_USAGE_TRANSFORM_FEEDBACK_BUFFER_BIT_EXT specifies that the buffer is suitable for using
+   for binding as a transform feedback buffer with vkCmdBindTransformFeedbackBuffersEXT.
+
+• VK_BUFFER_USAGE_TRANSFORM_FEEDBACK_COUNTER_BUFFER_BIT_EXT specifies that the buffer is suitable
+   for using as a counter buffer with vkCmdBeginTransformFeedbackEXT and
+   vkCmdEndTransformFeedbackEXT.
+
+• VK_BUFFER_USAGE_RAY_TRACING_BIT_NV specifies that the buffer is suitable for use in
+   vkCmdTraceRaysNV and vkCmdBuildAccelerationStructureNV.
+
+• VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT_EXT specifies that the buffer can be used to retrieve
+   a buffer device address via vkGetBufferDeviceAddressEXT and use that address to access the
+   buffer’s memory from a shader.
+   typedef VkFlags VkBufferUsageFlags;
+---
+typedef enum VkSharingMode {
+   VK_SHARING_MODE_EXCLUSIVE = 0,
+   VK_SHARING_MODE_CONCURRENT = 1 // may result in lower performance access to the buffer 
+	  or image than VK_SHARING_MODE_EXCLUSIVE
+} VkSharingMode;
+
+   • VK_SHARING_MODE_EXCLUSIVE specifies that access to any range or image subresource of the object
+	  will be exclusive to a single queue family at a time.
+
+   • VK_SHARING_MODE_CONCURRENT specifies that concurrent access to any range or image subresource
+	  of the object from multiple queue families is supported.
+---
+Ranges of buffers and image subresources of image objects created using VK_SHARING_MODE_EXCLUSIVE
+ must only be accessed by queues in the queue family that has ownership of the resource. Upon
+ creation, such resources are not owned by any queue family; ownership is implicitly acquired upon
+ first use within a queue. Once a resource using VK_SHARING_MODE_EXCLUSIVE is owned by some queue
+ family, the application must perform a queue family ownership transfer to make the memory
+ contents of a range or image subresource accessible to a different queue family.
+
+Note
+ Images still require a layout transition from VK_IMAGE_LAYOUT_UNDEFINED or
+ VK_IMAGE_LAYOUT_PREINITIALIZED before being used on the first queue.
+ A queue family can take ownership of an image subresource or buffer range of a resource created
+ with VK_SHARING_MODE_EXCLUSIVE, without an ownership transfer, in the same way as for a resource
+ that was just created; however, taking ownership in this way has the effect that the contents of the
+ image subresource or buffer range are undefined.
+ Ranges of buffers and image subresources of image objects created using
+ VK_SHARING_MODE_CONCURRENT must only be accessed by queues from the queue families specified
+ through the queueFamilyIndexCount and pQueueFamilyIndices members of the corresponding create
+ info structures.
+---
+VkResult vkCreateDescriptorSetLayout(
+   VkDevice device,
+
+   const VkDescriptorSetLayoutCreateInfo* pCreateInfo,
+   const VkAllocationCallbacks* pAllocator,
+
+   VkDescriptorSetLayout* pSetLayout
+);
+   • device is the logical device that creates the descriptor set layout.
+
+   • pCreateInfo is a pointer to an instance of the VkDescriptorSetLayoutCreateInfo structure
+      specifying the state of the descriptor set layout object.
+
+   • pAllocator controls host memory allocation as described in the Memory Allocation chapter.
+
+   • pSetLayout points to a VkDescriptorSetLayout handle in which the resulting descriptor set layout
+	  object is returned.
+
+Valid Usage (Implicit)
+
+   • device must be a valid VkDevice handle
+
+   • pCreateInfo must be a valid pointer to a valid VkDescriptorSetLayoutCreateInfo structure
+
+   • If pAllocator is not NULL, pAllocator must be a valid pointer to a valid
+	  VkAllocationCallbacks structure
+
+   • pSetLayout must be a valid pointer to a VkDescriptorSetLayout handle
+---
+typedef struct VkDescriptorSetLayoutCreateInfo {
+
+   VkStructureType sType;
+   const void* pNext;
+
+   VkDescriptorSetLayoutCreateFlags flags;
+   uint32_t bindingCount;
+   const VkDescriptorSetLayoutBinding* pBindings;
+
+} VkDescriptorSetLayoutCreateInfo;
+
+   • sType is the type of this structure.
+
+   • pNext is NULL or a pointer to an extension-specific structure.
+
+   • flags is a bitmask of VkDescriptorSetLayoutCreateFlagBits specifying options for descriptor set
+	  layout creation.
+
+   • bindingCount is the number of elements in pBindings.
+
+   • pBindings is a pointer to an array of VkDescriptorSetLayoutBinding structures.
+---
+typedef enum VkDescriptorSetLayoutCreateFlagBits {
+   VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR = 0x00000001,
+   VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT_EXT = 0x00000002,
+} VkDescriptorSetLayoutCreateFlagBits;
+
+   • VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR specifies that descriptor sets must
+      not be allocated using this layout, and descriptors are instead pushed by
+      vkCmdPushDescriptorSetKHR.
+
+   • VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT_EXT specifies that descriptor sets
+	  using this layout must be allocated from a descriptor pool created with the
+	  VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT_EXT bit set. Descriptor set layouts created with
+	  this bit set have alternate limits for the maximum number of descriptors per-stage and per-
+	  pipeline layout. The non-UpdateAfterBind limits only count descriptors in sets created without
+	  this flag. The UpdateAfterBind limits count all descriptors, but the limits may be higher than the
+	  non-UpdateAfterBind limits.
+
+typedef VkFlags VkDescriptorSetLayoutCreateFlags;
+---
+typedef struct VkDescriptorSetLayoutBinding {
+   uint32_t binding;
+   VkDescriptorType descriptorType;
+   uint32_t descriptorCount;
+   VkShaderStageFlags stageFlags;
+   const VkSampler* pImmutableSamplers;
+} VkDescriptorSetLayoutBinding;
+
+   • binding is the binding number of this entry and corresponds to a resource of the same binding
+      number in the shader stages.
+
+   • descriptorType is a VkDescriptorType specifying which type of resource descriptors are used for
+      this binding.
+ 
+   • descriptorCount is the number of descriptors contained in the binding, accessed in a shader as
+      an array , except if descriptorType is VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT in which case
+      descriptorCount is the size in bytes of the inline uniform block . If descriptorCount is zero this
+      binding entry is reserved and the resource must not be accessed from any stage via this binding
+      within any pipeline using the set layout.
+
+   • stageFlags member is a bitmask of VkShaderStageFlagBits specifying which pipeline shader
+      stages can access a resource for this binding. VK_SHADER_STAGE_ALL is a shorthand specifying that
+      all defined shader stages, including any additional stages defined by extensions, can access the
+      resource.
+      If a shader stage is not included in stageFlags, then a resource must not be accessed from that
+      stage via this binding within any pipeline using the set layout. Other than input attachments
+      which are limited to the fragment shader, there are no limitations on what combinations of
+      stages can use a descriptor binding, and in particular a binding can be used by both graphics
+      stages and the compute stage.
+   
+   • pImmutableSamplers affects initialization of samplers. If descriptorType specifies a
+      VK_DESCRIPTOR_TYPE_SAMPLER or VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER type descriptor, then
+      pImmutableSamplers can be used to initialize a set of immutable samplers. Immutable samplers
+      are permanently bound into the set layout; later binding a sampler into an immutable sampler
+      slot in a descriptor set is not allowed. If pImmutableSamplers is not NULL, then it is considered to be
+      a pointer to an array of sampler handles that will be consumed by the set layout and used for
+      the corresponding binding. If pImmutableSamplers is NULL, then the sampler slots are dynamic and
+      sampler handles must be bound into descriptor sets using this layout. If descriptorType is not
+      one of these descriptor types, then pImmutableSamplers is ignored.
+---
+typedef enum VkShaderStageFlagBits {
+   VK_SHADER_STAGE_VERTEX_BIT = 0x00000001,
+   VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT = 0x00000002,
+   VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT = 0x00000004,
+   VK_SHADER_STAGE_GEOMETRY_BIT = 0x00000008,
+   VK_SHADER_STAGE_FRAGMENT_BIT = 0x00000010,
+   VK_SHADER_STAGE_COMPUTE_BIT = 0x00000020,
+   VK_SHADER_STAGE_ALL_GRAPHICS = 0x0000001F,
+   VK_SHADER_STAGE_ALL = 0x7FFFFFFF,
+   VK_SHADER_STAGE_RAYGEN_BIT_NV = 0x00000100,
+   VK_SHADER_STAGE_ANY_HIT_BIT_NV = 0x00000200,
+   VK_SHADER_STAGE_CLOSEST_HIT_BIT_NV = 0x00000400,
+   VK_SHADER_STAGE_MISS_BIT_NV = 0x00000800,
+   VK_SHADER_STAGE_INTERSECTION_BIT_NV = 0x00001000,
+   VK_SHADER_STAGE_CALLABLE_BIT_NV = 0x00002000,
+   VK_SHADER_STAGE_TASK_BIT_NV = 0x00000040,
+   VK_SHADER_STAGE_MESH_BIT_NV = 0x00000080,
+} VkShaderStageFlagBits;
+
+• VK_SHADER_STAGE_VERTEX_BIT specifies the vertex stage.
+• VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT specifies the tessellation control stage.
+• VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT specifies the tessellation evaluation stage.
+• VK_SHADER_STAGE_GEOMETRY_BIT specifies the geometry stage.
+• VK_SHADER_STAGE_FRAGMENT_BIT specifies the fragment stage.
+• VK_SHADER_STAGE_COMPUTE_BIT specifies the compute stage.
+• VK_SHADER_STAGE_TASK_BIT_NV specifies the task stage.
+• VK_SHADER_STAGE_MESH_BIT_NV specifies the mesh stage.
+• VK_SHADER_STAGE_ALL_GRAPHICS is a combination of bits used as shorthand to specify all graphics
+   stages defined above (excluding the compute stage).
+• VK_SHADER_STAGE_ALL is a combination of bits used as shorthand to specify all shader stages
+   supported by the device, including all additional stages which are introduced by extensions.
+• VK_SHADER_STAGE_RAYGEN_BIT_NV specifies the ray generation stage.
+• VK_SHADER_STAGE_ANY_HIT_BIT_NV specifies the any-hit stage.
+• VK_SHADER_STAGE_CLOSEST_HIT_BIT_NV specifies the closest hit stage.
+• VK_SHADER_STAGE_MISS_BIT_NV specifies the miss stage.
+• VK_SHADER_STAGE_INTERSECTION_BIT_NV specifies the intersection stage.
+• VK_SHADER_STAGE_CALLABLE_BIT_NV specifies the callable stage.
+---
+typedef struct VkDescriptorBufferInfo {
+   VkBuffer buffer;		// must be a valid VkBuffer handle
+   VkDeviceSize offset; // typedef uint64_t VkDeviceSize;
+   VkDeviceSize range;  // 
+} VkDescriptorBufferInfo;
+
+   • buffer is the buffer resource.
+
+   • offset is the offset in bytes from the start of buffer. Access to buffer memory via this descriptor
+	  uses addressing that is relative to this starting offset.
+
+   • range is the size in bytes that is used for this descriptor update, or VK_WHOLE_SIZE to use the range
+	  from offset to the end of the buffer.
+	
+   Note
+	  When setting range to VK_WHOLE_SIZE, the effective range must not be larger than
+	  the maximum range for the descriptor type (maxUniformBufferRange or
+	  maxStorageBufferRange). This means that VK_WHOLE_SIZE is not typically useful in the
+	  common case where uniform buffer descriptors are suballocated from a buffer
+	  that is much larger than maxUniformBufferRange.
+
+   • offset must be less than the size of buffer
+
+   • If range is not equal to VK_WHOLE_SIZE, range must be greater than 0
+
+   • If range is not equal to VK_WHOLE_SIZE, range must be less than or equal to the size of buffer
+	  minus offset
+---
+void vkGetBufferMemoryRequirements(
+   VkDevice device,
+   VkBuffer buffer,
+VkMemoryRequirements* pMemoryRequirements
+);
+    • device is the logical device that owns the buffer.
+    • buffer is the buffer to query.
+    • pMemoryRequirements points to an instance of the VkMemoryRequirements structure in which the
+	  memory requirements of the buffer object are returned.
+
+   Valid Usage (Implicit)
+	• device must be a valid VkDevice handle
+	• buffer must be a valid VkBuffer handle
+	• pMemoryRequirements must be a valid pointer to a VkMemoryRequirements structure
+	• buffer must have been created, allocated, or retrieved from device
+---
+typedef struct VkMemoryRequirements {
+   VkDeviceSize size;
+   VkDeviceSize alignment;
+   uint32_t memoryTypeBits;
+} VkMemoryRequirements;
+
+   • The memoryTypeBits member is identical for all VkBuffer objects created with the same value for
+      the flags and usage members in the VkBufferCreateInfo structure and the handleTypes member
+      of the VkExternalMemoryBufferCreateInfo structure passed to vkCreateBuffer. Further, if usage1
+      and usage2 of type VkBufferUsageFlags are such that the bits set in usage2 are a subset of the bits
+      set in usage1, and they have the same flags and VkExternalMemoryBufferCreateInfo
+      ::handleTypes, then the bits set in memoryTypeBits returned for usage1 must be a subset of the bits
+      set in memoryTypeBits returned for usage2, for all values of flags.   
+
+   • size is the size, in bytes, of the memory allocation required for the resource.  
+
+   • alignment is the alignment, in bytes, of the offset within the allocation required for the
+      resource.
+
+   • memoryTypeBits is a bitmask and contains one bit set for every supported memory type for the
+      resource. Bit i is set if and only if the memory type i in the VkPhysicalDeviceMemoryProperties
+      structure for the physical device is supported for the resource.
+---
+To create a render pass, call:
+VkResult vkCreateRenderPass(
+ VkDevice device,
+ const VkRenderPassCreateInfo* pCreateInfo,
+ const VkAllocationCallbacks* pAllocator,
+ VkRenderPass* pRenderPass
+);
+   • device is the logical device that creates the render pass.
+
+   • pCreateInfo is a pointer to an instance of the VkRenderPassCreateInfo structure that describes
+	  the parameters of the render pass.
+
+   • pAllocator controls host memory allocation as described in the Memory Allocation chapter.
+
+   • pRenderPass points to a VkRenderPass handle in which the resulting render pass object is
+	  returned.
+	  Valid Usage (Implicit)
+
+   • device must be a valid VkDevice handle
+
+   • pCreateInfo must be a valid pointer to a valid VkRenderPassCreateInfo structure
+
+   • If pAllocator is not NULL, pAllocator must be a valid pointer to a valid
+	  VkAllocationCallbacks structure
+
+   • pRenderPass must be a valid pointer to a VkRenderPass handle
+
+typedef struct VkRenderPassCreateInfo {
+   VkStructureType sType;
+   const void* pNext;
+   VkRenderPassCreateFlags flags;
+   uint32_t attachmentCount;
+   const VkAttachmentDescription* pAttachments;
+   uint32_t subpassCount;
+   const VkSubpassDescription* pSubpasses;
+   uint32_t dependencyCount;
+   const VkSubpassDependency* pDependencies;
+} VkRenderPassCreateInfo;
+
+   • sType is the type of this structure.
+
+   • pNext is NULL or a pointer to an extension-specific structure.
+
+   • flags is reserved for future use.
+
+   • attachmentCount is the number of attachments used by this render pass.
+
+   • pAttachments points to an array of attachmentCount VkAttachmentDescription structures
+	  describing the attachments used by the render pass.
+
+   • subpassCount is the number of subpasses to create.
+
+   • pSubpasses points to an array of subpassCount VkSubpassDescription structures describing each
+	  subpass.
+
+   • dependencyCount is the number of memory dependencies between pairs of subpasses.
+
+   • pDependencies points to an array of dependencyCount VkSubpassDependency structures
+	  describing dependencies between pairs of subpasses.
+
+   Note
+	  Care should be taken to avoid a data race here; 
+	  if any subpasses access
+	  attachments with overlapping memory locations, 
+	  and one of those accesses is a write, 
+	  a subpass dependency needs to be included between them.
+---
+To submit command buffers to a queue, call:
+
+VkResult vkQueueSubmit(
+   VkQueue queue,
+   uint32_t submitCount,
+   const VkSubmitInfo* pSubmits,
+   VkFence fence
+   );
+
+   • queue is the queue that the command buffers will be submitted to.
+
+   • submitCount is the number of elements in the pSubmits array.
+
+   • pSubmits is a pointer to an array of VkSubmitInfo structures, each specifying a command buffer
+      submission batch.
+
+   • fence is an optional handle to a fence to be signaled once all submitted command buffers have
+      completed execution. If fence is not VK_NULL_HANDLE, it defines a fence signal operation.
+---
+typedef struct VkSubmitInfo {
+   VkStructureType sType;
+   const void* pNext;
+   uint32_t waitSemaphoreCount;
+   const VkSemaphore* pWaitSemaphores;
+   const VkPipelineStageFlags* pWaitDstStageMask;
+   uint32_t commandBufferCount;
+   const VkCommandBuffer* pCommandBuffers;
+   uint32_t signalSemaphoreCount;
+   const VkSemaphore* pSignalSemaphores;
+} VkSubmitInfo;
+
+• sType is the type of this structure.
+
+• pNext is NULL or a pointer to an extension-specific structure.
+
+• waitSemaphoreCount is the number of semaphores upon which to wait before executing the
+   command buffers for the batch.
+
+• pWaitSemaphores is a pointer to an array of semaphores upon which to wait before the command
+   buffers for this batch begin execution. If semaphores to wait on are provided, they define a
+   semaphore wait operation.
+
+• pWaitDstStageMask is a pointer to an array of pipeline stages at which each corresponding
+   semaphore wait will occur.
+
+• commandBufferCount is the number of command buffers to execute in the batch.
+
+• pCommandBuffers is a pointer to an array of command buffers to execute in the batch.
+
+• signalSemaphoreCount is the number of semaphores to be signaled once the commands specified
+   in pCommandBuffers have completed execution.
+
+• pSignalSemaphores is a pointer to an array of semaphores which will be signaled when the
+   command buffers for this batch have completed execution. If semaphores to be signaled are
+   provided, they define a semaphore signal operation.
+   The order that command buffers appear in pCommandBuffers is used to determine submission order,
+   and thus all the implicit ordering guarantees that respect it. Other than these implicit ordering
+   guarantees and any explicit synchronization primitives, these command buffers may overlap or
+   otherwise execute out of order.
+---
+
+Recording
+   vkBeginCommandBuffer changes the state of a command buffer from the initial state to the
+   recording state. Once a command buffer is in the recording state, vkCmd* commands can be used
+   to record to the command buffer.
+
+Executable
+   vkEndCommandBuffer ends the recording of a command buffer, and moves it from the
+   recording state to the executable state. Executable command buffers can be submitted, reset, or
+   recorded to another command buffer.
+
+Pending
+   Queue submission of a command buffer changes the state of a command buffer from the
+   executable state to the pending state. Whilst in the pending state, applications must not attempt
+   to modify the command buffer in any way - as the device may be processing the commands
+   recorded to it. Once execution of a command buffer completes, the command buffer reverts
+   back to either the executable state, or the invalid state if it was recorded with
+   VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT. A synchronization command should be used to
+   detect when this occurs.
+
+Invalid
+   Some operations, such as modifying or deleting a resource that was used in a command
+   recorded to a command buffer, will transition the state of that command buffer into the invalid
+   state. Command buffers in the invalid state can only be reset or freed.
+
+---
+5.2. Command Pools
+
+Opaque objects. Command buffer memory is allocated through
+Amortize the cost of resource creation across multiple command buffers. 
+Command pools are externally synchronized
+Same CPOOL can't be used concurrently in multiple threads. 
+This includes use via recording commands on any command buffers allocated from the pool
+   as well as operations that allocate, free, and reset command buffers, or the pool itself.
+
+Command pools are represented by VkCommandPool handles:
+VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkCommandPool)
+
+To create a command pool, call:
+VkResult vkCreateCommandPool(
+ VkDevice device,
+ const VkCommandPoolCreateInfo* pCreateInfo,
+ const VkAllocationCallbacks* pAllocator,
+ VkCommandPool* pCommandPool);
+
+   • device is the logical device that creates the command pool.
+
+   • pCreateInfo is a pointer to an instance of the VkCommandPoolCreateInfo structure specifying
+	  the state of the command pool object.
+
+   • pAllocator controls host memory allocation as described in the Memory Allocation chapter.
+   
+   • pCommandPool points to a VkCommandPool handle in which the created pool is returned.
+
+typedef struct VkCommandPoolCreateInfo {
+   VkStructureType sType;
+   const void* pNext;
+   VkCommandPoolCreateFlags flags;
+   uint32_t queueFamilyIndex;
+} VkCommandPoolCreateInfo;
+
+   • sType is the type of this structure.
+
+   • pNext is NULL or a pointer to an extension-specific structure.
+
+   • flags is a bitmask of VkCommandPoolCreateFlagBits indicating usage behavior for the pool and
+	  command buffers allocated from it.
+
+   • queueFamilyIndex designates a queue family as described in section Queue Family Properties. All
+	  command buffers allocated from this command pool must be submitted on queues from the
+   same queue family.
+---
+typedef enum VkCommandPoolCreateFlagBits {
+   VK_COMMAND_POOL_CREATE_TRANSIENT_BIT = 0x00000001,
+   VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT = 0x00000002,
+} VkCommandPoolCreateFlagBits;
+
+• VK_COMMAND_POOL_CREATE_TRANSIENT_BIT specifies that command buffers allocated from the pool
+   will be short-lived, meaning that they will be reset or freed in a relatively short timeframe. This
+   flag may be used by the implementation to control memory allocation behavior within the pool.
+
+• VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT allows any command buffer allocated from a
+   pool to be individually reset to the initial state; either by calling vkResetCommandBuffer, or via
+   the implicit reset when calling vkBeginCommandBuffer. If this flag is not set on a pool, then
+   vkResetCommandBuffer must not be called for any command buffer allocated from that pool.
+   typedef VkFlags VkCommandPoolCreateFlags;
+---
+//moved to ogi-vk-command-buffer.hpp ->
