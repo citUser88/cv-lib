@@ -538,8 +538,9 @@ private:
 
 		// Mapping and copying data to GPU
 		// Coherent, all writes are completed to the GPU immediately following unmapping the buffer
-		uint32_t memtypidx = getMemoryTypeIndex(memReqs.memoryTypeBits, 	vk::MemoryPropertyFlagBits::eHostVisible |
-																								vk::MemoryPropertyFlagBits::eHostCoherent);
+		uint32_t memtypidx = getMemoryTypeIndex(memReqs.memoryTypeBits, 
+							vk::MemoryPropertyFlagBits::eHostVisible |
+							vk::MemoryPropertyFlagBits::eHostCoherent);
 		stagingBuffers.vertices.memory = vks.D.allocateMemory(
 			vk::MemoryAllocateInfo(
 				memReqs.size,
