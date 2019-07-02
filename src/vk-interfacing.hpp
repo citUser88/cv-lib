@@ -923,9 +923,9 @@ private:
 			 vk::BlendFactor::eZero,
 			 vk::BlendOp::eAdd,
 			 vk::ColorComponentFlags(vk::ColorComponentFlagBits::eR | 
-											 vk::ColorComponentFlagBits::eG | 
-											 vk::ColorComponentFlagBits::eB | 
-											 vk::ColorComponentFlagBits::eA)
+						 vk::ColorComponentFlagBits::eG | 
+						 vk::ColorComponentFlagBits::eB | 
+						 vk::ColorComponentFlagBits::eA)
 			)//PipelineColorBlendAttachmentState()
 		};//colorBlendAttachments
 
