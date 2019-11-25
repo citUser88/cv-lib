@@ -31,7 +31,7 @@ public:
 	VoidMain() 
 	{	// HEY NICE RED todo: unicode support, string Resources for translators(human, ultimately)
 		// write << ANSI formatting overload functions i.e. std::cout << ANSIFX::fg(color) << ANSIFX::fg(reset) etc... 
-		std::cout << "\u001b[31m\t\t\t\tVULKAN XD-lib (Cross platform multi-paradigm graphics library\u001b[0m" << std::endl;
+		std::cout << "\u001b[31m\t\t\t\tCV-lib (Cross platform multi-paradigm graphics library\u001b[0m" << std::endl;
 		std::cout << "\u001b[32m\t\t\t\t\tpre-release v0.1.01ac\u001b[0m" << std::endl;
 		logString_to_devLog("ctor invoked: VoidMain", true);		
 	};

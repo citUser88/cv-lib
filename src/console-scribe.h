@@ -17,7 +17,8 @@ void setConsoleWindowPosition(short nX, short nY)
 	HWND conWnd;
 	conWnd = GetConsoleWindow(); // create/adjust winRect with passed width and height    
 	
-	RECT R = { nX, nY, 892, 639 };	
+	RECT R = { nX, nY, 892, 639 };
+
 	AdjustWindowRect(&R, WS_OVERLAPPED, false);
 	if (!SetWindowPos(conWnd, HWND_TOP, R.left,R.top,R.right, R.bottom, SWP_SHOWWINDOW))
 	{

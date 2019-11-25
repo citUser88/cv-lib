@@ -91,7 +91,7 @@ public:
 			name,						//	LPCSTR    lpWindowName,			
 			WS_POPUPWINDOW |
 			WS_VISIBLE,				// DWORD     dwStyle,
-			3000, 11,																		 
+			1000, 11, //3000, 11,																		 
 			winRect.right - winRect.left,		// width
 			winRect.bottom - winRect.top,		// height,
 			NULL,						// HWND      hWndParent,

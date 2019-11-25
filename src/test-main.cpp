@@ -19,7 +19,8 @@ Keyboard*	kbd;
 
 int main(int argc, char *argv[]) 
 {
-	setConsoleWindowPosition(1933,128);
+	//setConsoleWindowPosition(1933,128);
+	setConsoleWindowPosition(10,128);
 	logOpenLoggingFile();
 	logString_to_devLog("State: INITIALIZING...", true);
 	enableConsoleVTP();
